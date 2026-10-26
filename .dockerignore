@@ -1,0 +1,16 @@
+venv/
+data_raw_sp500/
+data_processed_sp500/
+*.csv
+*.joblib
+*.png
+__pycache__/
+.git/
+.vscode/
+mlruns/
+mlflow_data/
+_backup_*/
+archive/
+*.db
+reports/
+data_sentiment/

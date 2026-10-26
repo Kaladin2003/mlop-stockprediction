@@ -1,0 +1,7 @@
+FROM python:3.12-slim
+ENV PYTHONUNBUFFERED=1
+WORKDIR /app
+COPY requirements-pipeline.txt .
+RUN pip install --no-cache-dir -r requirements-pipeline.txt
+COPY features.py evaluation_utils.py sp500_ingestion.py sp500_processing.py data_validation.py sp500_training.py promote_model.py pipeline.py ./
+CMD ["python", "pipeline.py", "--schedule"]

@@ -1,0 +1,7 @@
+﻿dataset,metric,vader_finance,vader_original
+financial_phrasebank,accuracy,0.6263250883392226,0.571113074204947
+financial_phrasebank,macro_f1,0.560576785902011,0.48714886272316676
+financial_phrasebank,polarity_accuracy,0.6345933562428407,0.5589919816723941
+manual_headlines,accuracy,0.445,0.43
+manual_headlines,macro_f1,0.4590200248094985,0.4289869173179963
+manual_headlines,polarity_accuracy,0.47115384615384615,0.41346153846153844

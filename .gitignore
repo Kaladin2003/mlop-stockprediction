@@ -1,0 +1,27 @@
+# Περιβάλλον Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+.vscode/
+
+# Δεδομένα (δημιουργούνται από την αυτόματη ροή)
+data_raw_sp500/
+data_processed_sp500/
+data_sentiment/*
+!data_sentiment/headlines_to_label.csv
+
+# MLflow και μοντέλα
+mlflow_data/
+mlruns/
+*.db
+*.joblib
+
+# Αντίγραφα ασφαλείας και παλιά αρχεία
+_backup_*/
+archive/
+data_ingestion.py
+data_processing.py
+model_training.py
+AAPL_*.csv
+/*.png

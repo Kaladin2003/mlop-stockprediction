@@ -1,0 +1,84 @@
+services:
+  mlflow-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlflow_data:/mlflow_data
+    command: >
+      mlflow server
+      --backend-store-uri sqlite:////mlflow_data/mlflow.db
+      --artifacts-destination /mlflow_data/artifacts
+      --serve-artifacts
+      --host 0.0.0.0
+      --port 5000
+      --allowed-hosts "mlflow-server,mlflow-server:5000,localhost,localhost:5000,127.0.0.1,127.0.0.1:5000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: always
+
+  # Backend (FastAPI): φορτώνει το μοντέλο @production από το Registry και εξυπηρετεί τις προβλέψεις.
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow-server:5000
+      - MLFLOW_MODEL_NAME=sp500_cross_sectional
+      - MLFLOW_MODEL_ALIAS=production
+      - NLP_STRENGTH=1.5
+    depends_on:
+      mlflow-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    restart: always
+
+  # Διεπαφή χρήστη Streamlit.
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: always
+
+  # Αυτόματη ροή MLOps: ingestion → processing → validation → training → promotion,
+  pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile.pipeline
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow-server:5000
+      - MLFLOW_MODEL_NAME=sp500_cross_sectional
+      - MLFLOW_MODEL_ALIAS=production
+      - API_URL=http://api:8000
+      - PIPELINE_TIMEZONE=America/New_York
+      - PIPELINE_CRON=30 17 * * mon-fri
+      - PIPELINE_FULL_REFRESH_CRON=0 6 * * sat
+      - RUN_ON_STARTUP=false
+    volumes:
+      - ./data_raw_sp500:/app/data_raw_sp500
+      - ./data_processed_sp500:/app/data_processed_sp500
+      - ./reports:/app/reports
+    depends_on:
+      mlflow-server:
+        condition: service_healthy
+    restart: always
