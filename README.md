@@ -17,23 +17,6 @@
 
 Τέσσερα containers με Docker Compose:
 
-```mermaid
-flowchart LR
-    YF[Yahoo Finance] -->|ιστορικές τιμές| ING
-    WIKI[Wikipedia] -->|λίστα μετοχών| ING
-    subgraph pipeline [pipeline - APScheduler]
-        ING[ingestion] --> PROC[processing] --> VAL[validation] --> TR[training] --> PROMO[promotion]
-    end
-    ING <-->|CSV| DATA[(data_raw_sp500 / data_processed_sp500)]
-    TR -->|run, μοντέλο| MLF[(MLflow Server :5000<br/>Tracking + Model Registry)]
-    PROMO -->|alias @production| MLF
-    PROMO -->|POST /reload-model| API[FastAPI :8000]
-    MLF -->|μοντέλο @production| API
-    YF -->|τρέχουσες τιμές, ειδήσεις RSS| API
-    API <-->|JSON| UI[Streamlit :8501]
-    USER((Χρήστης)) <--> UI
-```
-
 | Υπηρεσία | Θύρα | Ρόλος |
 |---|---|---|
 | `mlflow-server` | 5000 | Tracking Server και Model Registry (SQLite, artifacts) |
